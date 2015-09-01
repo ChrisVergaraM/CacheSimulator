@@ -1,6 +1,6 @@
 import sys
 # Format admitted for the project <workload_file> <policy> <cache size (number of entries)> <extra parameters may go here>
-
+# python cacheSimulator workload.txt LRU 5000
 file = str(sys.argv[1])
 policy = str(sys.argv[2])
 entriesNum = str(sys.argv[3])
@@ -12,6 +12,7 @@ def readFile(archivo):
 	return contenido
 
 def cargarFile(archivo):
+	print 'Cargando ' + str(file)
 	content = open(str(archivo),'r')
 	#contenido = []
 	contenido = [x.strip('\n') for x in content.readlines()]
@@ -25,31 +26,35 @@ class cache:
 		self.method = str(algoritm)
 		self.missrate = 0
 		self.data = {}
-		self.cacheContent =[]
+		self.cacheContent =[] #LRU
 		
 	def setMethod(self):
-		lru = []
 		hits = 0
-		cont = 0
+		miss= 0
 		i = 0
-		j = 0
+		print 'Evaluando una cache %s con %d entradas.' % (self.method, self.size)
 		if(self.method=='LRU'):
-			while j < self.size:
+			while i < len(dataset)-1:
 				if(self.data.has_key(dataset[i])):
 					hits = hits+1
-					
+					del self.data[dataset[i]]
+					self.data[dataset[i]] = dataset[i]											
 				else:
-					self.data[dataset[i]] = [dataset[i]]
-					self.cacheContent.append(dataset[i])
-					lru.appen(dataset[i])
+					miss = miss+1
+					self.missrate = miss
+					if(len(self.data)<self.size):						
+						self.data[dataset[i]] = dataset[i]						
+					else:						
+						self.data.popitem()
+						self.data[dataset[i]] = dataset[i]							
 				i= i+1
-				j = len(self.cacheContent)
-			print len(self.cacheContent)
+			print len(self.data)
+			print 'Hay %d Misses' % self.missrate
+			print 'Hits: ' +str(hits)
 		else:
 			print 'no usare nada'
 			
-	def printInfo(self):
-		print 'Evaluando una cache %s con %d entradas.' % (self.method, self.size)
+	def printInfo(self):		
 		print 'Resultados:'
 		print 'Miss rate: x.x% (W misses out of Q references)'
 		print 'Miss rate (warm cache): y.y% (M misses out of Q 50000 references)'
@@ -57,4 +62,4 @@ class cache:
 
 test = cache(policy,entriesNum)
 test.setMethod()
-test.printInfo()
+#test.printInfo()
