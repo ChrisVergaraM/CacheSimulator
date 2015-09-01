@@ -1,4 +1,5 @@
 import sys
+import time
 # Format admitted for the project <workload_file> <policy> <cache size (number of entries)> <extra parameters may go here>
 # python cacheSimulator workload.txt LRU 5000
 file = str(sys.argv[1])
@@ -33,8 +34,9 @@ class cache:
 		miss= 0
 		i = 0
 		print 'Evaluando una cache %s con %d entradas.' % (self.method, self.size)
+		inicio = time.time()
 		if(self.method=='LRU'):
-			while i < len(dataset)-1:
+			while i < len(dataset):
 				if(self.data.has_key(dataset[i])):
 					hits = hits+1
 					del self.data[dataset[i]]
@@ -48,9 +50,14 @@ class cache:
 						self.data.popitem()
 						self.data[dataset[i]] = dataset[i]							
 				i= i+1
+			fin = time.time()
+			total = fin - inicio
 			print len(self.data)
 			print 'Hay %d Misses' % self.missrate
 			print 'Hits: ' +str(hits)
+			print 'Algoritmo ejecutado en %s' % str(total)
+			print len(dataset)
+			
 		else:
 			print 'no usare nada'
 			
