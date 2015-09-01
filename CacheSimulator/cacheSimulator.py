@@ -18,7 +18,6 @@ def cargarFile(archivo):
 	return contenido
 
 dataset = cargarFile(file)
-lru = []
 
 class cache:
 	def __init__(self, algoritm, tamano):
@@ -27,9 +26,9 @@ class cache:
 		self.missrate = 0
 		self.data = {}
 		self.cacheContent =[]
-		self.lru = []
 		
 	def setMethod(self):
+		lru = []
 		hits = 0
 		cont = 0
 		i = 0
@@ -38,12 +37,12 @@ class cache:
 			while j < self.size:
 				if(self.data.has_key(dataset[i])):
 					hits = hits+1
-					i = i+1
 					
 				else:
 					self.data[dataset[i]] = [dataset[i]]
 					self.cacheContent.append(dataset[i])
-					i = i+1
+					lru.appen(dataset[i])
+				i= i+1
 				j = len(self.cacheContent)
 			print len(self.cacheContent)
 		else:
