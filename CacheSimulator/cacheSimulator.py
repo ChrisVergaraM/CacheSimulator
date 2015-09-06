@@ -21,6 +21,7 @@ def cargarFile(archivo):
 
 dataset = cargarFile(file)
 
+
 class cache:
 	def __init__(self, algoritm, tamano):
 		self.size = int(tamano)
@@ -30,12 +31,18 @@ class cache:
 		self.cacheContent =[] #LRU
 		
 	def setMethod(self):
+		temp = dataset
+		uniques = []
+		control = []
 		hits = 0
 		miss= 0
 		i = 0
+		cont = 0
 		print 'Evaluando una cache %s con %d entradas.' % (self.method, self.size)
-		inicio = time.time()
+		
+		#LRU
 		if(self.method=='LRU'):
+			inicio = time.time()
 			while i < len(dataset):
 				if(self.data.has_key(dataset[i])):
 					hits = hits+1
@@ -57,9 +64,42 @@ class cache:
 			print 'Hits: ' +str(hits)
 			print 'Algoritmo ejecutado en %s' % str(total)
 			print len(dataset)
-			
-		else:
-			print 'no usare nada'
+#Implementacion del algoritmo OPTIMO
+# python cacheSimulator workload.txt OPTIMO 5000			
+		if(self.method=='OPTIMO'):
+			inicio = time.time()
+			while i < len(dataset):
+				#Cuando el elemento se repite
+				proximo = temp[i]
+				temp.remove(proximo)
+				if proximo not in temp:
+					#Cuando el elemento nunca se repite en el archivo
+					uniques.append(proximo)
+				else:
+					control.append(temp.index(proximo))
+					control.sort()				
+				if(self.data.has_key(dataset[i])):
+					hits = hits+1										
+				else:
+					miss = miss+1
+					self.missrate = miss
+					if(len(self.data)<self.size):						
+						self.data[dataset[i]] = dataset[i]
+					else:
+						if not control:
+							del self.data[temp[control.pop()]]
+						else:
+							del self.data[uniques.pop()]
+						self.data[dataset[i]] = dataset[i]							
+				i= i+1
+				#print i
+			fin = time.time()
+			total = fin - inicio
+			print len(self.data)
+			print 'Hay %d Misses' % self.missrate
+			print 'Hits: ' +str(hits)
+			print 'Algoritmo ejecutado en %s' % str(total)
+			print len(dataset)			
 			
 	def printInfo(self):		
 		print 'Resultados:'
