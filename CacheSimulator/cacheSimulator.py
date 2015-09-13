@@ -103,29 +103,40 @@ class cache:
 # python cacheSimulator workload.txt CLOCK 5000			
 		if(self.method=='CLOCK'):
 			puntero = 0
+			stop = True
 			inicio = time.time()
 			while i < len(dataset):
+				if puntero == self.size:
+					puntero = 0
 				if(self.data.has_key(dataset[i])):
 					hits = hits+1
+					del self.data[dataset[i]]
 					self.data[dataset[i]] = 1
 					puntero = puntero + 1
 				else:
 					miss = miss+1
-					self.missrate = miss
 					if(len(self.data)<self.size):						
 						self.data[dataset[i]] = 0
-						#element = clockItem(dataset[i],i)
-						#clockList.append(element)
+						clockList.append(dataset[i])
 					else:
-						if not (self.data.get(dataset[puntero])):
-							del self.data[dataset[puntero]]
+						if not (self.data.get(clockList[puntero])):
+							del self.data[clockList[puntero]]
 						else:
-							while
-							self.data[dataset[puntero]] = 0
-						self.data[dataset[i]] = 0							
+							while stop:
+								self.data[clockList[puntero]] = 0
+								puntero = puntero + 1
+								if not (self.data.get(clockList[puntero])):
+									del self.data[clockList[puntero]]
+									puntero = puntero + 1
+									stop = False
+								if puntero == self.size:
+									puntero = 0
+						self.data[dataset[i]] = 0
+						clockList.append(dataset[i])
 				i= i+1
 			fin = time.time()
 			total = fin - inicio
+			self.missrate = miss
 			print len(self.data)
 			print 'Hay %d Misses' % self.missrate
 			print 'Hits: ' +str(hits)
