@@ -13,17 +13,13 @@ def cargarFile(archivo):
 	contenido = [x.strip('\n') for x in content.readlines()]
 	return contenido
 dataset = cargarFile(file)
-optimal = {}
-''''
-def cargando():
-	i=0
-	print 'Preparando el algoritmo optimo'
-	for line in dataset:
-		if optimal.has_key(line):
-			optimal[line] = int(optimal.get(line))+1
-		optimal[line]=i
-		i = i+1
-cargando()'''
+
+#print dataset
+
+def guardar(nombreArchivo,info):
+	f = open (nombreArchivo+'.txt', "a+")
+	f.write(str(info)+'\n')
+	f.close()
 
 class cache:
 	def __init__(self, algoritm, tamano):
@@ -31,6 +27,7 @@ class cache:
 		self.method = str(algoritm)
 		self.missrate = 0
 		self.data = {}
+		self.misses = 0
 		self.cacheContent =[] #LRU
 		
 	def setMethod(self):
@@ -63,68 +60,87 @@ class cache:
 						self.data[dataset[i]] = dataset[i]
 						control.append(dataset[i])
 				i= i+1
-				print i
 			self.missrate = miss
 			fin = time.time()
 			total = fin - inicio
 			print len(self.data)
-			print 'Hay %d Misses' % self.missrate
-			print 'Hits: ' +str(hits)
-			print 'Algoritmo ejecutado en %s' % str(total)
-			print len(dataset)
+			#print 'Misses'+str(self.missrate)
+			print 'Resultados'
+			miss1= round((float(self.missrate)/len(dataset)),2)*100
+			self.misses =miss1
+			miss2= round((float(self.missrate)/(int(len(dataset))-int(self.size))),2)*100
+			print 'Miss rate:  %s' % str(miss1) + str(self.missrate) + ' %%  Misses out of %d References ' % len(dataset)
+			print 'Miss rate: (warm cache) %s' % str(miss2) + str(self.missrate) + ' %%  Misses out of %d References ' % (int(len(dataset))-int(self.size))
+			print 'Algoritmo ejecutado en %s' % str(total) + ' segundos'
 #Implementacion del algoritmo OPTIMO
 # python cacheSimulator workload.txt OPTIMO 5000			
 		if(self.method=='OPTIMO'):
-			i=0
+			temp = {}
+			noUsados = {}
+			usados = {}
+			eliminar = []
+			detener = True
+			j=0
 			print 'Preparando el algoritmo optimo'
 			for line in dataset:
-				if optimal.has_key(line):
-					optimal[line] = int(optimal.get(line))+1
-				optimal[line]=i
+				temp[line]=j
+				if noUsados.has_key(line):
+					usados[line] = j
+					del noUsados[line]
+				else:
+					if not usados.has_key(line):
+						noUsados[line]=j
+					else:
+						usados[line]=j				
+				j= j+1
+			usadosList = usados.values()
+			usadosList.sort()
+			usadosList.reverse()
+			noUsadosList = noUsados.values()
+			noUsadosList .sort()
+			print usadosList
+			print noUsadosList
+			eliminar = noUsadosList+usadosList
+			print eliminar
 			inicio = time.time()
-			while i < len(dataset):
-				#Cuando el elemento se repite
-				#proximo = temp[i]
-				#temp.remove(proximo)
-				#if proximo not in temp:
-					#Cuando el elemento nunca se repite en el archivo
-				#	uniques.append(proximo)
-				#else:
-				#	control.append(temp.index(proximo))
-				#	control.sort()				
+			print i
+			while i < len(dataset):		
 				if(self.data.has_key(dataset[i])):
-					hits = hits+1										
+					hits = hits+1
+					print 'Es un hit'
 				else:
 					miss = miss+1
-					if(len(self.data)<self.size):						
-						self.data[dataset[i]] = optimal[dataset[i]]
+					print 'Es un miss'
+					if(len(self.data)<self.size):
+						self.data[dataset[i]] = 0
 					else:
-						a = list(self.data.values())
-						a.sort()
-						del self.data[self.data.keys()[self.data.values().index(a.pop())]]
-						self.data[dataset[i]] = optimal[dataset[i]]						
+						punt = 0
+						while detener:
+							if self.data.has_key(dataset[eliminar[punt]]):
+								del self.data[dataset[eliminar[punt]]]
+								eliminar.remove(eliminar[punt])
+								detener = False
+							else:
+								punt = punt + 1
+						detener = True
+						self.data[dataset[i]] = 0
 				i= i+1
 				print i
+				print self.data
 			self.missrate = miss
 			fin = time.time()
 			total = fin - inicio
 			print len(self.data)
 			print 'Misses'+str(self.missrate)
 			print 'Resultados'
-			miss1= round((self.missrate/len(dataset))*100)
-			miss2= round((self.missrate/len(dataset))*100)
-			print 'Miss rate:  %f' % miss1 + str(self.missrate) + ' Misses out of %d References ' % len(dataset)
-			print 'Miss rate: (warm cache) %f' % miss2 + str(self.missrate) + ' Misses out of %d References ' % (int(len(dataset))-int(self.size))
-			#print 'Hits: ' +str(hits)
+			miss1= round((float(self.missrate)/len(dataset)),2)*100
+			self.misses =miss1
+			miss2= round((float(self.missrate)/(int(len(dataset))-int(self.size))),2)*100
+			print 'Miss rate:  %s' % str(miss1) + str(self.missrate) + ' %%  Misses out of %d References ' % len(dataset)
+			print 'Miss rate: (warm cache) %s' % str(miss2) + str(self.missrate) + ' %%  Misses out of %d References ' % (int(len(dataset))-int(self.size))
 			print 'Algoritmo ejecutado en %s' % str(total) + ' segundos'
-			#print len(dataset)
-
-	def printInfo(self):		
-		print 'Resultados:'
-		print 'Miss rate: x.x% (W misses out of Q references)'
-		print 'Miss rate (warm cache): y.y% (M misses out of Q 50000 references)'
-		print len(dataset)
 
 test = cache(policy,entriesNum)
 test.setMethod()
-#test.printInfo()
+info = str(test.size)+','+str(test.misses)+','+str(test.method)
+guardar('results',info)
