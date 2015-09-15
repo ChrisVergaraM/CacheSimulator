@@ -1,10 +1,10 @@
 import sys
 import time
 # Format admitted for the project <workload_file> <policy> <cache size (number of entries)> <extra parameters may go here>
-# python cacheSimulator workload.txt LRU 5000
+# python cacheSimulator.py workload.txt LRU 5000
 file = str(sys.argv[1])
 policy = str(sys.argv[2])
-entriesNum = str(sys.argv[3]
+entriesNum = str(sys.argv[3])
 
 def cargarFile(archivo):
 	print 'Cargando ' + str(file)
@@ -12,12 +12,18 @@ def cargarFile(archivo):
 	#contenido = []
 	contenido = [x.strip('\n') for x in content.readlines()]
 	return contenido
-
 dataset = cargarFile(file)
-class clockItem:
-	def __init__(self,content,ind):
-		self.content = content
-		self.ind = str(ind)
+optimal = {}
+''''
+def cargando():
+	i=0
+	print 'Preparando el algoritmo optimo'
+	for line in dataset:
+		if optimal.has_key(line):
+			optimal[line] = int(optimal.get(line))+1
+		optimal[line]=i
+		i = i+1
+cargando()'''
 
 class cache:
 	def __init__(self, algoritm, tamano):
@@ -44,17 +50,21 @@ class cache:
 			while i < len(dataset):
 				if(self.data.has_key(dataset[i])):
 					hits = hits+1
-					del self.data[dataset[i]]
-					self.data[dataset[i]] = dataset[i]											
+					control.remove(dataset[i])
+					control.append(dataset[i])
 				else:
 					miss = miss+1
-					self.missrate = miss
 					if(len(self.data)<self.size):						
-						self.data[dataset[i]] = dataset[i]						
+						self.data[dataset[i]] = dataset[i]
+						control.append(dataset[i])
 					else:						
-						self.data.popitem()
-						self.data[dataset[i]] = dataset[i]							
+						del self.data[control[0]]
+						control.remove(control[0])						
+						self.data[dataset[i]] = dataset[i]
+						control.append(dataset[i])
 				i= i+1
+				print i
+			self.missrate = miss
 			fin = time.time()
 			total = fin - inicio
 			print len(self.data)
@@ -65,83 +75,50 @@ class cache:
 #Implementacion del algoritmo OPTIMO
 # python cacheSimulator workload.txt OPTIMO 5000			
 		if(self.method=='OPTIMO'):
+			i=0
+			print 'Preparando el algoritmo optimo'
+			for line in dataset:
+				if optimal.has_key(line):
+					optimal[line] = int(optimal.get(line))+1
+				optimal[line]=i
 			inicio = time.time()
 			while i < len(dataset):
 				#Cuando el elemento se repite
-				proximo = temp[i]
-				temp.remove(proximo)
-				if proximo not in temp:
+				#proximo = temp[i]
+				#temp.remove(proximo)
+				#if proximo not in temp:
 					#Cuando el elemento nunca se repite en el archivo
-					uniques.append(proximo)
-				else:
-					control.append(temp.index(proximo))
-					control.sort()				
+				#	uniques.append(proximo)
+				#else:
+				#	control.append(temp.index(proximo))
+				#	control.sort()				
 				if(self.data.has_key(dataset[i])):
 					hits = hits+1										
 				else:
 					miss = miss+1
-					self.missrate = miss
 					if(len(self.data)<self.size):						
-						self.data[dataset[i]] = dataset[i]
+						self.data[dataset[i]] = optimal[dataset[i]]
 					else:
-						if not control:
-							del self.data[temp[control.pop()]]
-						else:
-							del self.data[uniques.pop()]
-						self.data[dataset[i]] = dataset[i]							
+						a = list(self.data.values())
+						a.sort()
+						del self.data[self.data.keys()[self.data.values().index(a.pop())]]
+						self.data[dataset[i]] = optimal[dataset[i]]						
 				i= i+1
-				#print i
-			fin = time.time()
-			total = fin - inicio
-			print len(self.data)
-			print 'Hay %d Misses' % self.missrate
-			print 'Hits: ' +str(hits)
-			print 'Algoritmo ejecutado en %s' % str(total)
-			print len(dataset)
-			
-#Implementacion del algoritmo CLOCK
-# python cacheSimulator workload.txt CLOCK 5000			
-		if(self.method=='CLOCK'):
-			puntero = 0
-			stop = True
-			inicio = time.time()
-			while i < len(dataset):
-				if puntero == self.size:
-					puntero = 0
-				if(self.data.has_key(dataset[i])):
-					hits = hits+1
-					del self.data[dataset[i]]
-					self.data[dataset[i]] = 1
-					puntero = puntero + 1
-				else:
-					miss = miss+1
-					if(len(self.data)<self.size):						
-						self.data[dataset[i]] = 0
-						clockList.append(dataset[i])
-					else:
-						if not (self.data.get(clockList[puntero])):
-							del self.data[clockList[puntero]]
-						else:
-							while stop:
-								self.data[clockList[puntero]] = 0
-								puntero = puntero + 1
-								if not (self.data.get(clockList[puntero])):
-									del self.data[clockList[puntero]]
-									puntero = puntero + 1
-									stop = False
-								if puntero == self.size:
-									puntero = 0
-						self.data[dataset[i]] = 0
-						clockList.append(dataset[i])
-				i= i+1
-			fin = time.time()
-			total = fin - inicio
+				print i
 			self.missrate = miss
+			fin = time.time()
+			total = fin - inicio
 			print len(self.data)
-			print 'Hay %d Misses' % self.missrate
-			print 'Hits: ' +str(hits)
-			print 'Algoritmo ejecutado en %s' % str(total)
-			print len(dataset)
+			print 'Misses'+str(self.missrate)
+			print 'Resultados'
+			miss1= round((self.missrate/len(dataset))*100)
+			miss2= round((self.missrate/len(dataset))*100)
+			print 'Miss rate:  %f' % miss1 + str(self.missrate) + ' Misses out of %d References ' % len(dataset)
+			print 'Miss rate: (warm cache) %f' % miss2 + str(self.missrate) + ' Misses out of %d References ' % (int(len(dataset))-int(self.size))
+			#print 'Hits: ' +str(hits)
+			print 'Algoritmo ejecutado en %s' % str(total) + ' segundos'
+			#print len(dataset)
+
 	def printInfo(self):		
 		print 'Resultados:'
 		print 'Miss rate: x.x% (W misses out of Q references)'
