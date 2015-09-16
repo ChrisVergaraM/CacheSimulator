@@ -1,6 +1,8 @@
 # CacheSimulator
 
 #Proyecto realizado para la materia Sistemas Operativos
+#Christian Vergara
+#Angel Gonzalez
 #Se propone simular los algoritmos de reemplazo en una cache, LRU, Optimo, entre otros.
 #El proyecto está realizado con python
 
